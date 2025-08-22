@@ -7,7 +7,8 @@ volatile double D = 0xFFFFFFFF;
 char* test() {
   char *buffer = NULL;
   volatile int x = (int)D;
-  asprintf(&buffer, "%f %x\n", D, x);
+  volatile uint32_t u = (uint32_t)D;
+  asprintf(&buffer, "%f %x %u\n", D, x, u);
   return buffer;
 }
 
