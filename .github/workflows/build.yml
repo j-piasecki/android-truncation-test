@@ -1,0 +1,38 @@
+name: Run app
+on:
+  push:
+  pull_request:
+    branches:
+      - main
+jobs:
+  run-app:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 25
+    env:
+      ANDROID_NDK: /usr/local/lib/android/sdk/ndk/27.1.12297006
+    steps:
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'oracle'
+    - name: Checkout
+      uses: actions/checkout@v4.1.0
+    - name: Run android tests
+      uses: ReactiveCircus/android-emulator-runner@v2.30.1
+      with:
+        api-level: 29
+        arch: x86
+        emulator-options: -timezone Europe/Paris -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+        script: |
+          adb logcat -c
+          touch ./emulator.log
+          chmod 777 ./emulator.log
+          adb logcat >> ./emulator.log &
+          ./gradlew installDebug && adb shell am start -n io.github.jpiasecki.truncationtest/io.github.jpiasecki.truncationtest.MainActivity && sleep 15
+    - name: Upload emulator log
+      if: always()
+      uses: actions/upload-artifact@v4.3.4
+      with:
+        name: emulator.log
+        path: emulator.log
